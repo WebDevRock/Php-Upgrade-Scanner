@@ -7,6 +7,7 @@ It is a fast static, pattern-based scan. It doesn't run your code and it doesn't
 ## Contents
 
 - [Requirements](#requirements)
+  - [Security notes](#security-notes)
 - [Quick start](#quick-start)
 - [Parameters](#parameters)
 - [Examples](#examples)
@@ -20,10 +21,16 @@ It is a fast static, pattern-based scan. It doesn't run your code and it doesn't
 
 ## Requirements
 
-- Windows PowerShell **5.1** or PowerShell **7+** (tested on Windows with both)
-- .NET Framework 4.x (ships with Windows 10/11). The script is pure PowerShell plus .NET regular expressions: it compiles no code, so there is no `Add-Type` C#, no call to `csc.exe` and no temporary DLLs. The only `Add-Type` loads the built-in Windows Forms assembly, and only for `-Browse`.
-- It needs **Full Language mode**. It does not run under Constrained Language Mode (as enforced by AppLocker / WDAC), because that mode blocks the generic .NET collections the script uses. Check with `$ExecutionContext.SessionState.LanguageMode`.
+- Windows PowerShell **5.1** or PowerShell **7+** (tested on Windows with both). Nothing else needs installing.
+- **Full Language mode** (the PowerShell default). See [Security notes](#security-notes).
 - `-Browse` needs Windows, because it uses a Windows Forms folder picker.
+
+### Security notes
+
+- **No code is compiled.** The script is plain PowerShell. It doesn't use `Add-Type` with C# code, doesn't start `csc.exe` and writes no temporary DLLs. Earlier versions compiled a C# helper at startup, and that has been rewritten in PowerShell. It only uses .NET classes that ship with PowerShell itself, such as regular expressions and collections.
+- **The only `Add-Type`** is `Add-Type -AssemblyName System.Windows.Forms`, which loads a built-in Windows component without compiling anything. It only runs when you use `-Browse`.
+- **Constrained Language Mode is not supported.** AppLocker or WDAC policies can enforce this mode, and it blocks the generic .NET collections the script uses. To check, run `$ExecutionContext.SessionState.LanguageMode`: if it says `FullLanguage`, the script will run.
+- **It is read-only.** It only reads source files and writes the report files you ask for. It makes no network calls and doesn't run PHP or Git. The only external program it can start is your default browser, to open the HTML report, and only with `-OpenReport`.
 
 If your execution policy blocks the script, either unblock it once or run it with a bypass:
 
